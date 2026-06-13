@@ -84,8 +84,9 @@ __global__ void gpuGaussianBlurKernel(const unsigned char* input,
     }
 }
 
-void gpuGaussianBlur(const unsigned char* input, unsigned char* output,
-                     int width, int height, int channels) {
+
+float gpuGaussianBlur(const unsigned char* input, unsigned char* output,
+                      int width, int height, int channels) {
     int imageSize = width * height * channels;
 
     unsigned char* d_input;
@@ -100,16 +101,32 @@ void gpuGaussianBlur(const unsigned char* input, unsigned char* output,
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x,
                   (height + blockSize.y - 1) / blockSize.y);
 
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
     gpuGaussianBlurKernel<<<gridSize, blockSize>>>(d_input, d_output,
                                                    width, height, channels);
 
-    cudaDeviceSynchronize();
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float kernelTime = 0.0f;
+    cudaEventElapsedTime(&kernelTime, start, stop);
 
     cudaMemcpy(output, d_output, imageSize, cudaMemcpyDeviceToHost);
 
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
     cudaFree(d_input);
     cudaFree(d_output);
+
+    return kernelTime;
 }
+
 
 void cpuSobel(const unsigned char* input, unsigned char* output,
               int width, int height, int channels) {
@@ -205,8 +222,9 @@ __global__ void gpuSobelKernel(const unsigned char* input,
     }
 }
 
-void gpuSobel(const unsigned char* input, unsigned char* output,
-              int width, int height, int channels) {
+
+float gpuSobel(const unsigned char* input, unsigned char* output,
+               int width, int height, int channels) {
     int imageSize = width * height * channels;
 
     unsigned char* d_input;
@@ -221,16 +239,32 @@ void gpuSobel(const unsigned char* input, unsigned char* output,
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x,
                   (height + blockSize.y - 1) / blockSize.y);
 
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
     gpuSobelKernel<<<gridSize, blockSize>>>(d_input, d_output,
                                             width, height, channels);
 
-    cudaDeviceSynchronize();
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float kernelTime = 0.0f;
+    cudaEventElapsedTime(&kernelTime, start, stop);
 
     cudaMemcpy(output, d_output, imageSize, cudaMemcpyDeviceToHost);
 
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
     cudaFree(d_input);
     cudaFree(d_output);
+
+    return kernelTime;
 }
+
 
 int main() {
     int width, height, channels;
@@ -270,7 +304,7 @@ int main() {
 
     auto gpuStart = std::chrono::high_resolution_clock::now();
 
-    gpuGaussianBlur(img, gpuBlur.data(), width, height, channels);
+    float gpuBlurKernelTime = gpuGaussianBlur(img, gpuBlur.data(), width, height, channels);
 
     auto gpuEnd = std::chrono::high_resolution_clock::now();
 
@@ -280,6 +314,7 @@ int main() {
     std::cout << "CPU Blur Time: " << cpuTime << " ms" << std::endl;
     std::cout << "GPU Blur Time: " << gpuTime << " ms" << std::endl;
     std::cout << "Speedup: " << cpuTime / gpuTime << "x" << std::endl;
+    std::cout << "GPU Blur Kernel Time: " << gpuBlurKernelTime << " ms" << std::endl;
 
     auto cpuSobelStart = std::chrono::high_resolution_clock::now();
 
@@ -292,7 +327,7 @@ int main() {
 
     auto gpuSobelStart = std::chrono::high_resolution_clock::now();
 
-    gpuSobel(gpuBlur.data(), gpuSobelOutput.data(), width, height, channels);
+    float gpuSobelKernelTime = gpuSobel(gpuBlur.data(), gpuSobelOutput.data(), width, height, channels);
 
     auto gpuSobelEnd = std::chrono::high_resolution_clock::now();
 
@@ -302,6 +337,8 @@ int main() {
     std::cout << "CPU Sobel Time: " << cpuSobelTime << " ms" << std::endl;
     std::cout << "GPU Sobel Time: " << gpuSobelTime << " ms" << std::endl;
     std::cout << "Sobel Speedup: " << cpuSobelTime / gpuSobelTime << "x" << std::endl;
+    std::cout << "GPU Sobel Kernel Time: " << gpuSobelKernelTime << " ms" << std::endl;
+    std::cout << "Sobel Kernel Speedup: " << cpuSobelTime / gpuSobelKernelTime << "x" << std::endl;
 
     stbi_write_png("results/cpu_blur.png",
                    width, height, channels,
