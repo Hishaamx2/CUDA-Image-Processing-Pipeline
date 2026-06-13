@@ -60,6 +60,7 @@ Compile the project:
 ```bash
 make clean
 make
+```
 
 ## Run Instructions
 
