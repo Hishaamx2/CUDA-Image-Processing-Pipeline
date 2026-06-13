@@ -121,23 +121,23 @@ The CPU and GPU Sobel implementations produced visually equivalent edge detectio
 
 ## Example Results
 
-Image Resolution: 1659 x 944
+Image Resolution: 1456 x 816
 
-CPU Blur Time: 41.4067 ms
+CPU Blur Time: 30.3428 ms
 
-GPU Blur Time: 412.843 ms
+GPU Blur Time: 255.762 ms
 
-GPU Blur Kernel Time: 30.3825 ms
+GPU Blur Kernel Time: 0.191456 ms
 
-CPU Sobel Time: 75.5511 ms
+CPU Sobel Time: 49.6262 ms
 
-GPU Sobel Time: 3.17053 ms
+GPU Sobel Time: 2.03548 ms
 
-Sobel Speedup: 23.8292x
+Sobel Speedup: 24.3806x
 
-GPU Sobel Kernel Time: 0.11616 ms
+GPU Sobel Kernel Time: 0.08288 ms
 
-Sobel Kernel Speedup: 650.405x
+Sobel Kernel Speedup: 598.771x
 
 ## Author Contribution
 
