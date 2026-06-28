@@ -2,8 +2,6 @@
 
 A high-performance C++/CUDA application that implements Gaussian blur and Sobel edge detection using GPU parallelism. The project includes both CPU and GPU implementations and benchmarks their performance to demonstrate the benefits of CUDA acceleration.
 
-## Hishaam Abdul-Muhaimin
-
 ## Project Overview
 
 This project implements a GPU-accelerated image processing pipeline using CUDA. The application performs Gaussian blur and Sobel edge detection on images. Both CPU and GPU implementations were developed to compare performance and demonstrate the benefits of parallel processing on GPUs.
